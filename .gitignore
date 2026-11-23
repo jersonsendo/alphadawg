@@ -1,0 +1,21 @@
+# Frontend dependencies and build artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+src/main/resources/static/index.html
+src/main/resources/static/assets/
+
+# Maven and local runtime data
+target/
+data/
+
+# Local files
+cookies.txt
+*.log
+
+# IDE/OS
+.vscode/settings.json
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

@@ -1,0 +1,48 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Vet Clinic Frontend",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "--prefix",
+                "frontend",
+                "run",
+                "build"
+            ],
+            "problemMatcher": [],
+            "inAgents": true
+        },
+        {
+            "label": "Run Vet Clinic Full Stack (Java 25)",
+            "type": "shell",
+            "command": "${userHome}\\.maven\\apache-maven-3.9.15\\bin\\mvn.cmd",
+            "args": [
+                "spring-boot:run"
+            ],
+            "dependsOn": "Build Vet Clinic Frontend",
+            "options": {
+                "env": {
+                    "JAVA_HOME": "${userHome}\\.jdk\\jdk-25\\jdk-25.0.4.1+1",
+                    "PATH": "${userHome}\\.jdk\\jdk-25\\jdk-25.0.4.1+1\\bin;${userHome}\\.maven\\apache-maven-3.9.15\\bin;${env:Path}"
+                }
+            },
+            "problemMatcher": [],
+            "inAgents": true
+        },
+        {
+            "label": "Run Vet Clinic Frontend Dev Server",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "--prefix",
+                "frontend",
+                "run",
+                "dev"
+            ],
+            "problemMatcher": [],
+            "inAgents": true
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="nav">
+    <div class="brand">🐾 Alpha Dogs<small>Veterinary Clinic</small></div>
+    <a th:href="@{/}">Pets</a>
+    <a th:href="@{/appointments}">Appointments</a>
+    <a th:href="@{/records}">Medical Records</a>
+    <a th:href="@{/payments}">Payments</a>
+</nav>
+<div th:fragment="messages">
+    <div class="msg-ok" th:if="${success}" th:text="${success}"></div>
+    <div class="msg-err" th:if="${error}" th:text="${error}"></div>
+</div>
+</body>
+</html>

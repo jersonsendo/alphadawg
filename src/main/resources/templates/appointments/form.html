@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Book Appointment</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Book Appointment</h1>
+    <div th:replace="~{layout :: messages}"></div>
+    <form th:action="@{/appointments}" th:object="${appointment}" method="post">
+        <label>Select Pet</label>
+        <select name="pet.id" required>
+            <option th:each="p : ${pets}" th:value="${p.id}" th:text="${p.label}"></option>
+        </select>
+        <label>Date and Time</label>
+        <input type="datetime-local" th:field="*{appointmentTime}" required>
+        <label>Reason for Visit</label>
+        <input th:field="*{reason}" placeholder="e.g. Vaccination, check-up" required>
+        <br><br>
+        <button type="submit">Confirm Appointment</button>
+        <a class="btn" th:href="@{/appointments}">Back</a>
+    </form>
+</main>
+</body>
+</html>

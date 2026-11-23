@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Medical Records</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Medical Records - Select Pet</h1>
+    <table>
+        <tr><th>Pet</th><th>Species</th><th>Owner</th><th></th></tr>
+        <tr th:each="p : ${pets}">
+            <td th:text="${p.name}"></td><td th:text="${p.species}"></td><td th:text="${p.ownerName}"></td>
+            <td><a class="btn" th:href="@{/records/pet/{id}(id=${p.id})}">View Records</a></td>
+        </tr>
+    </table>
+</main>
+</body>
+</html>

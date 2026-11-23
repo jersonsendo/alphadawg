@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Reschedule</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Reschedule Appointment</h1>
+    <div th:replace="~{layout :: messages}"></div>
+    <p>Pet: <b th:text="${appointment.pet.label}"></b></p>
+    <form th:action="@{/appointments/{id}/reschedule(id=${appointment.id})}" th:object="${appointment}" method="post">
+        <label>New Date and Time</label>
+        <input type="datetime-local" th:field="*{appointmentTime}" required>
+        <br><br>
+        <button type="submit">Save</button>
+        <a class="btn" th:href="@{/appointments}">Back</a>
+    </form>
+</main>
+</body>
+</html>

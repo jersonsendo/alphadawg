@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Medical Record</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Medical Record: <span th:text="${pet.name}"></span></h1>
+    <form th:action="@{/records/pet/{id}(id=${pet.id})}" th:object="${record}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <input type="hidden" th:field="*{recordDate}">
+        <label>Diagnosis</label><textarea th:field="*{diagnosis}" rows="3" required></textarea>
+        <label>Treatment</label><textarea th:field="*{treatment}" rows="3" required></textarea>
+        <label>Notes</label><textarea th:field="*{notes}" rows="3"></textarea>
+        <br><br>
+        <button type="submit">Save Medical Record</button>
+        <a class="btn" th:href="@{/records/pet/{id}(id=${pet.id})}">Back</a>
+    </form>
+</main>
+</body>
+</html>

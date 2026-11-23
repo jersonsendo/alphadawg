@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Payments</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Bills &amp; Payment History</h1>
+    <a class="btn" th:href="@{/payments/new}">+ Generate Bill</a>
+    <table>
+        <tr><th>Pet</th><th>Description</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+        <tr th:each="p : ${payments}">
+            <td th:text="${p.pet.label}"></td>
+            <td th:text="${p.description}"></td>
+            <td th:text="${'₱' + #numbers.formatDecimal(p.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+            <td><span class="tag" th:classappend="${p.status}" th:text="${p.status}"></span></td>
+            <td>
+                <form class="inline" th:if="${p.status.name() == 'UNPAID'}" th:action="@{/payments/{id}/pay(id=${p.id})}" method="post">
+                    <select name="method"><option>Cash</option><option>GCash</option><option>Card</option></select>
+                    <button class="ok">Pay</button>
+                </form>
+                <a class="btn" th:if="${p.status.name() == 'PAID'}" th:href="@{/payments/{id}/receipt(id=${p.id})}">Receipt</a>
+            </td>
+        </tr>
+    </table>
+</main>
+</body>
+</html>

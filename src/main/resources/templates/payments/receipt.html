@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Receipt</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <div class="receipt">
+        <h2 style="text-align:center">Veterinary Clinic Receipt</h2>
+        <p>Receipt No: <b th:text="${payment.receiptNo}"></b></p>
+        <p>Date: <span th:text="${#temporals.format(payment.paidAt, 'MMM dd, yyyy hh:mm a')}"></span></p>
+        <p>Pet / Owner: <span th:text="${payment.pet.label}"></span></p>
+        <p>Service: <span th:text="${payment.description}"></span></p>
+        <p>Payment Method: <span th:text="${payment.paymentMethod}"></span></p>
+        <h3>Total Paid: <span th:text="${'₱' + #numbers.formatDecimal(payment.amount, 1, 'COMMA', 2, 'POINT')}"></span></h3>
+        <p style="text-align:center">Thank you!</p>
+    </div>
+    <p style="text-align:center"><a class="btn" th:href="@{/payments}">Back to Payments</a></p>
+</main>
+</body>
+</html>

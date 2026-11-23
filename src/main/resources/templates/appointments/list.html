@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Appointments</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Appointments</h1>
+    <div th:replace="~{layout :: messages}"></div>
+    <a class="btn" th:href="@{/appointments/new}">+ Book Appointment</a>
+    <table>
+        <tr><th>Pet</th><th>Date &amp; Time</th><th>Reason</th><th>Status</th><th>Actions</th></tr>
+        <tr th:each="a : ${appointments}">
+            <td th:text="${a.pet.label}"></td>
+            <td th:text="${#temporals.format(a.appointmentTime, 'MMM dd, yyyy hh:mm a')}"></td>
+            <td th:text="${a.reason}"></td>
+            <td><span class="tag" th:classappend="${a.status}" th:text="${a.status}"></span></td>
+            <td th:if="${a.status.name() != 'CANCELLED'}">
+                <form class="inline" th:action="@{/appointments/{id}/confirm(id=${a.id})}" method="post"
+                      th:if="${a.status.name() == 'PENDING'}"><button class="ok">Confirm</button></form>
+                <a class="btn" th:href="@{/appointments/{id}/reschedule(id=${a.id})}">Reschedule</a>
+                <form class="inline" th:action="@{/appointments/{id}/cancel(id=${a.id})}" method="post"><button class="danger">Cancel</button></form>
+            </td>
+            <td th:if="${a.status.name() == 'CANCELLED'}">-</td>
+        </tr>
+    </table>
+</main>
+</body>
+</html>

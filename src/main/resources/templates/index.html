@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Vet Clinic</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <div class="hero">
+        <h1>🐕 Alpha Dawgs Veterinary Clinic</h1>
+        <p>Lead the pack in pet care. Manage appointments, medical records, and payments in one place.</p>
+    </div>
+
+    <h2>Registered Pets</h2>
+    <table>
+        <tr><th>ID</th><th>Name</th><th>Species</th><th>Breed</th><th>Owner</th></tr>
+        <tr th:each="p : ${pets}">
+            <td th:text="${p.id}"></td><td th:text="${p.name}"></td><td th:text="${p.species}"></td>
+            <td th:text="${p.breed}"></td><td th:text="${p.ownerName}"></td>
+        </tr>
+    </table>
+
+    <h2>Add a Pet</h2>
+    <form th:action="@{/pets}" th:object="${newPet}" method="post">
+        <label>Pet Name</label><input th:field="*{name}" required>
+        <label>Species</label><input th:field="*{species}" required>
+        <label>Breed</label><input th:field="*{breed}">
+        <label>Owner Name</label><input th:field="*{ownerName}" required>
+        <br><br><button type="submit">Save Pet</button>
+    </form>
+</main>
+</body>
+</html>

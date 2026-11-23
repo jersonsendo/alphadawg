@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Medical Records</title><link rel="stylesheet" th:href="@{/style.css}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Medical Records: <span th:text="${pet.name}"></span></h1>
+    <p>Species: <span th:text="${pet.species}"></span> | Breed: <span th:text="${pet.breed}"></span> | Owner: <span th:text="${pet.ownerName}"></span></p>
+    <a class="btn" th:href="@{/records/pet/{id}/new(id=${pet.id})}">+ Create Medical Record</a>
+    <a class="btn" th:href="@{/records}">Back</a>
+    <p th:if="${#lists.isEmpty(records)}">No medical records yet.</p>
+    <table th:unless="${#lists.isEmpty(records)}">
+        <tr><th>Date</th><th>Diagnosis</th><th>Treatment</th><th>Notes</th><th></th></tr>
+        <tr th:each="r : ${records}">
+            <td th:text="${r.recordDate}"></td><td th:text="${r.diagnosis}"></td>
+            <td th:text="${r.treatment}"></td><td th:text="${r.notes}"></td>
+            <td><a class="btn" th:href="@{/records/{id}/edit(id=${r.id})}">Update</a></td>
+        </tr>
+    </table>
+</main>
+</body>
+</html>
