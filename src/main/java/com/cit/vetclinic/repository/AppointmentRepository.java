@@ -9,4 +9,5 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByStatusNotAndAppointmentTimeGreaterThanEqualAndAppointmentTimeLessThan(
             Appointment.Status status, LocalDateTime startsAt, LocalDateTime before);
     long countByStatus(Appointment.Status status);
+    List<Appointment> findByPetOwnerIdOrderByAppointmentTimeAsc(Long ownerId);
 }

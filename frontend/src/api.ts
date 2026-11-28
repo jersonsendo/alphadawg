@@ -125,6 +125,28 @@ export type Dashboard = {
   paidAmount: number;
 };
 
+export type PortalOverview = {
+  ownerId: number;
+  ownerName: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  petCount: number;
+  upcomingAppointmentCount: number;
+  pendingAppointmentCount: number;
+  unpaidPaymentCount: number;
+  outstandingAmount: number;
+  paidAmount: number;
+};
+
+export type PortalProfile = {
+  ownerId: number;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+};
+
 export type ClinicNotification = {
   type: string;
   title: string;
@@ -136,7 +158,8 @@ export type AuthUser = {
   authenticated: boolean;
   email: string | null;
   displayName: string | null;
-  role: 'ADMIN' | 'STAFF' | null;
+  role: 'ADMIN' | 'STAFF' | 'CUSTOMER' | null;
+  ownerId?: number | null;
   passwordChangeRequired: boolean;
   registrationAvailable: boolean;
 };
@@ -227,6 +250,17 @@ export const api = {
     request<AuthUser>('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload: { email: string; password: string }) =>
     request<AuthUser>('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  staffLogin: (payload: { email: string; password: string }) =>
+    request<AuthUser>('/api/auth/staff/login', { method: 'POST', body: JSON.stringify(payload) }),
+  customerLogin: (payload: { email: string; password: string }) =>
+    request<AuthUser>('/api/auth/customer/login', { method: 'POST', body: JSON.stringify(payload) }),
+  customerRegister: (payload: {
+    email: string;
+    displayName: string;
+    phone?: string | null;
+    address?: string | null;
+    password: string;
+  }) => request<AuthUser>('/api/auth/customer/register', { method: 'POST', body: JSON.stringify(payload) }),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
   changePassword: (payload: { currentPassword: string; newPassword: string }) =>
     request<void>('/api/account/password', { method: 'PUT', body: JSON.stringify(payload) }),
@@ -264,8 +298,14 @@ export const api = {
     request<Owner>(`/api/owners/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   appointments: () => request<Appointment[]>('/api/appointments'),
   appointmentStaff: () => request<AppointmentStaff[]>('/api/appointment-staff'),
-  addAppointment: (payload: { petId: number; appointmentTime: string; reason: string;
-    staffId?: number | null; durationMinutes?: number; resource?: string | null }) =>
+  addAppointment: (payload: {
+    petId: number;
+    appointmentTime: string;
+    reason: string;
+    staffId?: number | null;
+    durationMinutes?: number;
+    resource?: string | null;
+  }) =>
     request<Appointment>('/api/appointments', { method: 'POST', body: JSON.stringify(payload) }),
   reschedule: (id: number, appointmentTime: string) =>
     request<Appointment>(`/api/appointments/${id}/reschedule`, {
@@ -289,12 +329,15 @@ export const api = {
   updateRecord: (id: number, payload: Omit<MedicalRecord, 'id' | 'petId'>) =>
     request<MedicalRecord>(`/api/records/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   payments: () => request<Payment[]>('/api/payments'),
-  addPayment: (payload: { petId: number; items: {
-    description: string;
-    quantity: number;
-    unitPrice: number | null;
-    productId: number | null;
-  }[] }) =>
+  addPayment: (payload: {
+    petId: number;
+    items: {
+      description: string;
+      quantity: number;
+      unitPrice: number | null;
+      productId: number | null;
+    }[];
+  }) =>
     request<Payment>('/api/payments', { method: 'POST', body: JSON.stringify(payload) }),
   inventory: () => request<InventoryProduct[]>('/api/inventory'),
   addInventoryProduct: (payload: Omit<InventoryProduct, 'id' | 'active' | 'lowStock'>) =>
@@ -315,4 +358,48 @@ export const api = {
   downloadPaymentPdf: (payment: Pick<Payment, 'id' | 'status'>) =>
     downloadFile(`/api/payments/${payment.id}/pdf`,
       `${payment.status === 'PAID' ? 'receipt' : 'invoice'}-${payment.id}.pdf`),
+  portal: {
+    overview: () => request<PortalOverview>('/api/portal/overview'),
+    updateProfile: (payload: { name: string; phone: string | null; address: string | null }) =>
+      request<PortalProfile>('/api/portal/profile', { method: 'PUT', body: JSON.stringify(payload) }),
+    pets: () => request<Pet[]>('/api/portal/pets'),
+    pet: (petId: number) => request<Pet>(`/api/portal/pets/${petId}`),
+    addPet: (payload: {
+      name: string;
+      species: string;
+      breed: string | null;
+      birthDate?: string | null;
+      sex?: Pet['sex'];
+      color?: string | null;
+      weightKg?: number | null;
+      allergies?: string | null;
+      medicalAlerts?: string | null;
+    }) => request<Pet>('/api/portal/pets', { method: 'POST', body: JSON.stringify(payload) }),
+    staff: () => request<AppointmentStaff[]>('/api/portal/staff'),
+    appointments: () => request<Appointment[]>('/api/portal/appointments'),
+    addAppointment: (payload: {
+      petId: number;
+      appointmentTime: string;
+      reason: string;
+      staffId?: number | null;
+    }) =>
+      request<Appointment>('/api/portal/appointments', { method: 'POST', body: JSON.stringify(payload) }),
+    reschedule: (id: number, appointmentTime: string) =>
+      request<Appointment>(`/api/portal/appointments/${id}/reschedule`, {
+        method: 'PUT',
+        body: JSON.stringify({ appointmentTime }),
+      }),
+    cancelAppointment: (id: number) =>
+      request<Appointment>(`/api/portal/appointments/${id}/cancel`, { method: 'PATCH' }),
+    records: (petId: number) => request<MedicalRecord[]>(`/api/portal/pets/${petId}/records`),
+    downloadMedicalRecordPdf: (petId: number, recordId: number) =>
+      downloadFile(`/api/portal/pets/${petId}/records/${recordId}/pdf`, `medical-record-${recordId}.pdf`),
+    downloadMedicalHistoryPdf: (petId: number) =>
+      downloadFile(`/api/portal/pets/${petId}/records/pdf`, `medical-history-pet-${petId}.pdf`),
+    payments: () => request<Payment[]>('/api/portal/payments'),
+    receipt: (id: number) => request<Payment>(`/api/portal/payments/${id}/receipt`),
+    downloadPaymentPdf: (payment: Pick<Payment, 'id' | 'status'>) =>
+      downloadFile(`/api/portal/payments/${payment.id}/pdf`,
+        `${payment.status === 'PAID' ? 'receipt' : 'invoice'}-${payment.id}.pdf`),
+  },
 };

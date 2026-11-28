@@ -2,9 +2,12 @@ package com.cit.vetclinic.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,7 +21,7 @@ import java.util.List;
 @Entity
 @Table(name = "clinic_users")
 public class ClinicUser implements UserDetails {
-    public enum Role { ADMIN, STAFF }
+    public enum Role { ADMIN, STAFF, CUSTOMER }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +38,10 @@ public class ClinicUser implements UserDetails {
 
     @Column(length = 16)
     private Role role = Role.STAFF;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id")
+    private Owner owner;
 
     private Boolean active = true;
 
@@ -72,6 +79,31 @@ public class ClinicUser implements UserDetails {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public Long getOwnerId() {
+        return owner == null ? null : owner.getId();
+    }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
+
+    public boolean isStaffOrAdmin() {
+        Role current = getRole();
+        return current == Role.ADMIN || current == Role.STAFF;
+    }
+
+    public boolean isCustomer() {
+        return getRole() == Role.CUSTOMER;
     }
 
     public LocalDateTime getCreatedAt() {

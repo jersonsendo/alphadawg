@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     long countByStatus(Payment.Status status);
     List<Payment> findByStatus(Payment.Status status);
+    List<Payment> findByPetOwnerIdOrderByIdDesc(Long ownerId);
     List<Payment> findByPaidAtGreaterThanEqualAndPaidAtLessThanOrderByPaidAtAsc(
             LocalDateTime start, LocalDateTime end);
 

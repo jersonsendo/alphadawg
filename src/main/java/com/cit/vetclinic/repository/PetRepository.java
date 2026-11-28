@@ -11,4 +11,5 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     long countByOwnerIdAndArchivedFalse(Long ownerId);
     List<Pet> findAllByArchivedFalse(Sort sort);
     List<Pet> findAllByArchivedTrue(Sort sort);
+    List<Pet> findAllByOwnerIdAndArchivedFalse(Long ownerId, Sort sort);
 }

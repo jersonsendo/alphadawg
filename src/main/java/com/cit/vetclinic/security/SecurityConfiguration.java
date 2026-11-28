@@ -97,7 +97,10 @@ public class SecurityConfiguration {
                         SecurityContextHolderFilter.class)
                 .addFilterAfter(auditTrailFilter, SessionAccountRefreshFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/index.html", "/assets/**", "/style.css").permitAll()
+                        .requestMatchers(
+                                "/", "/index.html", "/assets/**", "/images/**", "/style.css",
+                                "/login", "/staff", "/staff/**", "/customer", "/customer/**", "/portal", "/portal/**"
+                        ).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint((request, response, cause) -> {

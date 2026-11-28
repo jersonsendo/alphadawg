@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(roles = "STAFF")
 class PdfExportIntegrationTest {
     @Autowired
     private MockMvc mockMvc;

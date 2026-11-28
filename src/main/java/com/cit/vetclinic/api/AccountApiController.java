@@ -55,7 +55,8 @@ public class AccountApiController {
     @GetMapping("/staff")
     @PreAuthorize("hasRole('ADMIN')")
     public List<StaffResponse> staff() {
-        return users.findAllByOrderByCreatedAtAsc().stream().map(StaffResponse::from).toList();
+        return users.findByRoleInOrderByCreatedAtAsc(List.of(ClinicUser.Role.ADMIN, ClinicUser.Role.STAFF))
+                .stream().map(StaffResponse::from).toList();
     }
 
     @PostMapping("/staff")
@@ -85,6 +86,9 @@ public class AccountApiController {
                                                          HttpServletResponse response) {
         ClinicUser target = users.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff account not found."));
+        if (!target.isStaffOrAdmin()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff account not found.");
+        }
         ClinicUser current = (ClinicUser) authentication.getPrincipal();
         if (target.getId().equals(current.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -106,12 +110,17 @@ public class AccountApiController {
                                      Authentication authentication) {
         ClinicUser target = users.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff account not found."));
+        if (!target.isStaffOrAdmin()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff account not found.");
+        }
         ClinicUser current = (ClinicUser) authentication.getPrincipal();
+        if (request.role() == ClinicUser.Role.CUSTOMER) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Staff accounts must have ADMIN or STAFF role.");
+        }
         boolean removingAdmin = target.getRole() == ClinicUser.Role.ADMIN
                 && (request.role() != ClinicUser.Role.ADMIN || !request.active());
-        if (removingAdmin && users.findAllByOrderByCreatedAtAsc().stream()
+        if (removingAdmin && users.findByRoleInOrderByCreatedAtAsc(List.of(ClinicUser.Role.ADMIN)).stream()
                 .filter(ClinicUser::isActive)
-                .filter(user -> user.getRole() == ClinicUser.Role.ADMIN)
                 .count() <= 1) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The clinic must have at least one active admin.");
         }

@@ -4,6 +4,7 @@ frontend/dist/
 frontend/coverage/
 src/main/resources/static/index.html
 src/main/resources/static/assets/
+src/main/resources/static/images/
 
 # Maven and local runtime data
 target/

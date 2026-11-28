@@ -9,16 +9,17 @@ import com.cit.vetclinic.model.Payment;
 import com.cit.vetclinic.model.PaymentLine;
 import com.cit.vetclinic.model.Pet;
 import com.cit.vetclinic.repository.AppointmentRepository;
-import com.cit.vetclinic.repository.AppointmentBookingLockRepository;
 import com.cit.vetclinic.repository.ClinicProductRepository;
 import com.cit.vetclinic.repository.ClinicUserRepository;
 import com.cit.vetclinic.repository.MedicalRecordRepository;
 import com.cit.vetclinic.repository.OwnerRepository;
 import com.cit.vetclinic.repository.PaymentRepository;
 import com.cit.vetclinic.repository.PetRepository;
+import com.cit.vetclinic.service.AppointmentSchedulingService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,12 +40,13 @@ import static com.cit.vetclinic.api.ApiModels.*;
 
 @RestController
 @RequestMapping("/api")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 public class ClinicApiController {
     private static final DateTimeFormatter RECEIPT_DATE = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     private final PetRepository pets;
     private final AppointmentRepository appointments;
-    private final AppointmentBookingLockRepository bookingLocks;
+    private final AppointmentSchedulingService scheduling;
     private final ClinicUserRepository clinicUsers;
     private final MedicalRecordRepository records;
     private final PaymentRepository payments;
@@ -52,13 +54,13 @@ public class ClinicApiController {
     private final OwnerRepository owners;
 
     public ClinicApiController(PetRepository pets, AppointmentRepository appointments,
-                               AppointmentBookingLockRepository bookingLocks,
+                               AppointmentSchedulingService scheduling,
                                MedicalRecordRepository records, PaymentRepository payments,
                                OwnerRepository owners, ClinicUserRepository clinicUsers,
                                ClinicProductRepository products) {
         this.pets = pets;
         this.appointments = appointments;
-        this.bookingLocks = bookingLocks;
+        this.scheduling = scheduling;
         this.clinicUsers = clinicUsers;
         this.records = records;
         this.payments = payments;
@@ -195,7 +197,7 @@ public class ClinicApiController {
     @GetMapping("/appointment-staff")
     public List<AppointmentStaffResponse> listAppointmentStaff() {
         return clinicUsers.findAll().stream()
-                .filter(ClinicUser::isActive)
+                .filter(user -> user.isActive() && user.isStaffOrAdmin())
                 .sorted(Comparator.comparing(ClinicUser::getDisplayName, String.CASE_INSENSITIVE_ORDER))
                 .map(AppointmentStaffResponse::from)
                 .toList();
@@ -524,43 +526,15 @@ public class ClinicApiController {
     }
 
     private void lockAppointmentWrites() {
-        bookingLocks.lockById(1L).orElseThrow(
-                () -> new IllegalStateException("Appointment booking lock is not initialized."));
+        scheduling.lockAppointmentWrites();
     }
 
     private ClinicUser requireActiveStaff(Long id) {
-        ClinicUser user = clinicUsers.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assigned staff member not found."));
-        if (!user.isActive()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Inactive staff members cannot be assigned.");
-        }
-        return user;
+        return scheduling.requireActiveStaff(id);
     }
 
     private void ensureAppointmentAvailable(Appointment requested, Long excludedId) {
-        LocalDateTime startsAt = requested.getAppointmentTime();
-        LocalDateTime endsAt = startsAt.plusMinutes(requested.getDurationMinutes());
-        List<Appointment> candidates = appointments
-                .findByStatusNotAndAppointmentTimeGreaterThanEqualAndAppointmentTimeLessThan(
-                        Appointment.Status.CANCELLED, startsAt.minusMinutes(480), endsAt);
-        for (Appointment existing : candidates) {
-            if (Objects.equals(existing.getId(), excludedId)
-                    || !existing.getAppointmentTime().plusMinutes(existing.getDurationMinutes()).isAfter(startsAt)) {
-                continue;
-            }
-            Long requestedStaffId = requested.getAssignedStaff() == null
-                    ? null : requested.getAssignedStaff().getId();
-            Long existingStaffId = existing.getAssignedStaff() == null
-                    ? null : existing.getAssignedStaff().getId();
-            boolean staffConflict = requestedStaffId == null || existingStaffId == null
-                    || requestedStaffId.equals(existingStaffId);
-            String requestedResource = requested.getResource();
-            boolean resourceConflict = requestedResource != null && existing.getResource() != null
-                    && requestedResource.equalsIgnoreCase(existing.getResource());
-            if (staffConflict || resourceConflict) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "That time slot is already taken.");
-            }
-        }
+        scheduling.ensureAppointmentAvailable(requested, excludedId);
     }
 
     private void updateRecord(MedicalRecord record, MedicalRecordRequest request) {

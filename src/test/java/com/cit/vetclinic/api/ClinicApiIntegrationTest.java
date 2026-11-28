@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(roles = "STAFF")
 class ClinicApiIntegrationTest {
     @Autowired
     private MockMvc mockMvc;

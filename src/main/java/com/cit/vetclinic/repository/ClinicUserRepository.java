@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.List;
 
@@ -19,5 +20,9 @@ public interface ClinicUserRepository extends JpaRepository<ClinicUser, Long> {
 
     boolean existsByEmail(String email);
 
+    long countByRoleIn(Collection<ClinicUser.Role> roles);
+
     List<ClinicUser> findAllByOrderByCreatedAtAsc();
+
+    List<ClinicUser> findByRoleInOrderByCreatedAtAsc(Collection<ClinicUser.Role> roles);
 }
